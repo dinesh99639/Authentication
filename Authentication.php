@@ -7,21 +7,26 @@ class Authentication {
 		$this->secret = $secret;
 	}
 
-	function encode($data) {
+	function encode($session_data) {
 		$session = Array();
 
-		$session['data'] = json_encode($data);
-		$session['signature'] = hash_hmac('sha256', $session['data'], $this->secret);
+		$session['session'] = json_encode($session_data);
+		$session['signature'] = hash_hmac('sha256', $session['session'], $this->secret);
 
 		return $session;
 	}
 
 	function verify($session) {
-		$data = $session['data'];
+		$session_data = $session['session'];
 		$prev_signature = $session['signature'];
 
-		$curr_signature = hash_hmac('sha256', $data, $this->secret);
-		if ($prev_signature == $curr_signature) return true;
+		$curr_signature = hash_hmac('sha256', $session_data, $this->secret);
+		if ($prev_signature == $curr_signature) {
+			if (isset($session['session']['expiry'])) {
+				if ($session['session']['expiry'] > time()) return false;
+			}
+			return true;
+		} 
 		return false;
 	}
 }
