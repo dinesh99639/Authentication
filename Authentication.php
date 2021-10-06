@@ -16,6 +16,10 @@ class Authentication {
 		return $session;
 	}
 
+	function decode($session) {
+		return json_decode($session['session'])->data;
+	}
+
 	function verify($session) {
 		$session_data = $session['session'];
 		$prev_signature = $session['signature'];
